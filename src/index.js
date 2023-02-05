@@ -43,7 +43,7 @@ client.on('messageCreate', async (msg)=>{
       const gptResponse = await openai.createCompletion({
       model: "text-davinci-003",
       prompt: text,
-      max_tokens: 300,
+      max_tokens: 512,
       temperature:0.5, 
       stop: ['ChatGPT:', 'achillies:', 'stopPlease:']
     })
