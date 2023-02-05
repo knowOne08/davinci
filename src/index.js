@@ -3,6 +3,7 @@ const { Client, GatewayIntentBits, messageLink } = require("discord.js");
 const dotenv = require("dotenv");
 const axios = require("axios"); 
 dotenv.config();
+const keepAlive = require('./server')
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
@@ -53,5 +54,5 @@ client.on('messageCreate', async (msg)=>{
     console.log(err) 
   }
 })
-
+keepAlive()
 client.login(process.env.TOKEN);
