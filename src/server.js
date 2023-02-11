@@ -3,6 +3,7 @@ const server = express()
 
 server.all("/",(req,res)=>{
     console.log("bot is up")
+    res.send("Bot is Running")
 })
 
 function keepAlive(){

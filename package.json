@@ -4,6 +4,7 @@
     "discord.js": "^14.7.1",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
+    "node-schedule": "^2.1.1",
     "openai": "^3.1.0"
   },
   "name": "chatgptbot",
@@ -14,7 +15,7 @@
     "start": "node ."
   },
   "keywords": [],
-  "author": "",
+  "author": "knowOneo08",
   "license": "ISC",
   "description": ""
 }
