@@ -48,7 +48,7 @@ client.on('messageCreate', async (msg)=>{
       temperature:0.5, 
       stop: ['ChatGPT:', 'achillies:', 'stopPlease:']
     })
-      console.log(gptResponse);
+      // console.log(gptResponse);
     msg.reply(`${gptResponse.data.choices[0].text}`);
     return;
     }
