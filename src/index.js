@@ -2,6 +2,8 @@
 const { Client, GatewayIntentBits, messageLink, EmbedBuilder, MessageAttachment  } = require("discord.js");
 const dotenv = require("dotenv");
 const scheduleArchieve = require('node-schedule');
+const mongoose = require('mongoose');
+const updatersSchema = require('../models/updaters-schema')
 // const axios = require("axios"); 
 dotenv.config();
 const keepAlive = require('./server')
@@ -30,6 +32,10 @@ const openai = new OpenAIApi(configuration);
 
 //bot redy test
 client.on("ready", () => {
+  let uri = 'mongodb+srv://davinci:'+process.env.MONGO_PASS+'@cluster0.zux3pbq.mongodb.net/?retryWrites=true&w=majority'
+  mongoose.connect(uri, {
+    keepAlive:true
+  })
   console.log("Bot is ready!");
 });
 
@@ -58,29 +64,33 @@ client.on('messageCreate', async (msg)=>{
     let channel = msg.channel;
   
     if(msg.content.match(cmtLnk) !== null){
-    
-    msg.react('🔥');
-    const thread = await msg.startThread({
-      name: `${msg.author.username}'s AppreciationThread`,
-      // autoArchiveDuration: 60, 
-    });
+      
+      msg.react('🔥');
+      const thread = await msg.startThread({
+        name: `${msg.author.username}'s AppreciationThread`,
+        // autoArchiveDuration: 60, 
+      });
 
-    const threadId = thread.id;
-    const webhooks = await msg.channel.fetchWebhooks('1074013533576110170', 'C9tyxYO6j8PC6q-ImS6fVZNMO_fUedrS1UhPYuK-UtnrziIbY2BGg9BUcT8M7twggXES');
-    const webhook = webhooks.first();
+      const threadId = thread.id;
+      const webhooks = await msg.channel.fetchWebhooks('1074013533576110170', 'C9tyxYO6j8PC6q-ImS6fVZNMO_fUedrS1UhPYuK-UtnrziIbY2BGg9BUcT8M7twggXES');
+      const webhook = webhooks.first();
 
-    //theAppreciator webhook url
-    //https://discord.com/api/webhooks/1074013533576110170/C9tyxYO6j8PC6q-ImS6fVZNMO_fUedrS1UhPYuK-UtnrziIbY2BGg9BUcT8M7twggXES
-    await webhook.send({
-      content: 'Damnn, You Work too hard !!',
-      threadId: threadId,
-      files: ['https://i.pinimg.com/564x/7f/52/fb/7f52fb4660263684b4ffd130620736d2.jpg'],
-    });
+      //theAppreciator webhook url
+      //https://discord.com/api/webhooks/1074013533576110170/C9tyxYO6j8PC6q-ImS6fVZNMO_fUedrS1UhPYuK-UtnrziIbY2BGg9BUcT8M7twggXES
+      await webhook.send({
+        content: 'Damnn, You Work too hard !!',
+        threadId: threadId,
+        files: ['https://i.pinimg.com/564x/7f/52/fb/7f52fb4660263684b4ffd130620736d2.jpg'],
+      });
 
-    scheduleArchieve.scheduleJob('59 57 23 * * *', async () => {
-      thread.setArchived(true);
-    });
+      await new updatersSchema({
+        name: msg.author.username
+      })
 
+      scheduleArchieve.scheduleJob('59 57 23 * * *', async () => {
+        thread.setArchived(true);
+      });
+      
     }
   } catch(err) {
     console.log(err) 
