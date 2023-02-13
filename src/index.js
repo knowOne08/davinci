@@ -3,7 +3,7 @@ const { Client, GatewayIntentBits, messageLink, EmbedBuilder, MessageAttachment 
 const dotenv = require("dotenv");
 const scheduleArchieve = require('node-schedule');
 const mongoose = require('mongoose');
-const updatersSchema = require('../models/updaters-schema')
+const Updaters = require('../models/updaters-schema')
 // const axios = require("axios"); 
 dotenv.config();
 const keepAlive = require('./server')
@@ -83,14 +83,38 @@ client.on('messageCreate', async (msg)=>{
         files: ['https://i.pinimg.com/564x/7f/52/fb/7f52fb4660263684b4ffd130620736d2.jpg'],
       });
 
-      await new updatersSchema({
-        name: msg.author.username
-      })
+        await new Updaters({
+          uid: msg.author.id,
+          name: msg.author.username
+
+        }).save()
+
 
       scheduleArchieve.scheduleJob('59 57 23 * * *', async () => {
         thread.setArchived(true);
       });
       
+    }
+
+    if(msg.content =='?data'){
+
+      let dailyUpdaters = [];
+      (await Updaters.find()).forEach((dailyUpdater)=>{
+        
+        console.log(dailyUpdater.name);
+        dailyUpdaters.push('@' + dailyUpdater.name);
+      })
+      dailyUpdaters =  [... new Set(dailyUpdaters)]
+      if(dailyUpdaters){
+        msg.channel.send({
+        content: `Today's commiters ${dailyUpdaters}`
+        });
+      } else {
+        msg.channel.send({
+          content: `No commits today :(`
+        });
+      }
+
     }
   } catch(err) {
     console.log(err) 
