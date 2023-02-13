@@ -1,7 +1,13 @@
 //for a connection with discord
 const { Client, GatewayIntentBits, messageLink, EmbedBuilder, MessageAttachment  } = require("discord.js");
 const dotenv = require("dotenv");
-const scheduleArchieve = require('node-schedule');
+const schedule = require('node-schedule');
+let dailyUpdaters = [];
+let shoutoutRule = new schedule.RecurrenceRule()
+shoutoutRule.tz = 'Asia/Kolkata'
+shoutoutRule.hour = 23;
+shoutoutRule.minute = 58;
+shoutoutRule.second = 0;
 const mongoose = require('mongoose');
 const Updaters = require('../models/updaters-schema')
 // const axios = require("axios"); 
@@ -36,7 +42,28 @@ client.on("ready", () => {
   mongoose.connect(uri, {
     keepAlive:true
   })
+
   console.log("Bot is ready!");
+
+  schedule.scheduleJob(shoutoutRule, async() => {
+
+    // console.log('ran cron job')
+    // Send a dail-updaters shoutout
+    dailyUpdaters =  [... new Set(dailyUpdaters)]
+    if(dailyUpdaters){
+      client.channels.cache.get('1072021844758106195').send({ 
+      content: `Today's commiters ${dailyUpdaters}`
+      });
+    } else {
+      client.channels.cache.get('1072021844758106195').send({
+        content: `No commits today :(`
+      });
+    }
+
+    //emptying the database
+    mongoose.connection.db.dropCollection('updaters');
+    dailyUpdaters = [];
+  })
 });
 
 client.on('messageCreate', async (msg)=>{
@@ -89,36 +116,27 @@ client.on('messageCreate', async (msg)=>{
 
         }).save()
 
-
-      scheduleArchieve.scheduleJob('59 57 23 * * *', async () => {
+      //scheduled archive
+      schedule.scheduleJob('59 57 23 * * *', async () => {
         thread.setArchived(true);
       });
       
     }
 
-    if(msg.content =='?data'){
-
-      let dailyUpdaters = [];
       (await Updaters.find()).forEach((dailyUpdater)=>{
         
-        console.log(dailyUpdater.name);
-        dailyUpdaters.push('@' + dailyUpdater.name);
+        // console.log(dailyUpdater.name);
+        dailyUpdaters.push(' ' + dailyUpdater.name);
       })
-      dailyUpdaters =  [... new Set(dailyUpdaters)]
-      if(dailyUpdaters){
-        msg.channel.send({
-        content: `Today's commiters ${dailyUpdaters}`
-        });
-      } else {
-        msg.channel.send({
-          content: `No commits today :(`
-        });
-      }
+      
 
-    }
+    
+      // console.log(dailyUpdaters);
+
   } catch(err) {
     console.log(err) 
   }
 })
+
 keepAlive()
 client.login(process.env.TOKEN);
