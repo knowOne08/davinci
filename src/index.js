@@ -45,23 +45,25 @@ client.on("ready", () => {
 
   console.log("Bot is ready!");
 
-  schedule.scheduleJob(shoutoutRule, async() => {
+  schedule.scheduleJob('*/5 * * * * *', async() => {
 
     // console.log('ran cron job')
     // Send a dail-updaters shoutout
     dailyUpdaters =  [... new Set(dailyUpdaters)]
+    console.log(dailyUpdaters)
     if(dailyUpdaters){
+      console.log('test')
       client.channels.cache.get('1072021844758106195').send({ 
       content: `Today's commiters ${dailyUpdaters}`
       });
-    } else {
+    } else if(dailyUpdaters.length == 0){
       client.channels.cache.get('1072021844758106195').send({
         content: `No commits today :(`
       });
     }
 
     //emptying the database
-    mongoose.connection.db.dropCollection('updaters');
+    // mongoose.connection.db.dropCollection('updaters');
     dailyUpdaters = [];
   })
 });
@@ -87,8 +89,6 @@ client.on('messageCreate', async (msg)=>{
     }
 
     let cmtLnk = /https:\/\/github\.com\/.*\/.*\/commit\/[0-9a-f]{40}/;
-    let date = new Date();
-    let channel = msg.channel;
   
     if(msg.content.match(cmtLnk) !== null){
       
