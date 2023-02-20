@@ -1,8 +1,8 @@
 //for a connection with discord
-const { Client, GatewayIntentBits, messageLink, EmbedBuilder, MessageAttachment  } = require("discord.js");
+const { Client, GatewayIntentBits, EmbedBuilder, MessageAttachment } = require("discord.js");
 const dotenv = require("dotenv");
 const schedule = require('node-schedule');
-let dailyUpdaters = [];
+let dailyUpdaters = ['immemor'];
 let shoutoutRule = new schedule.RecurrenceRule()
 shoutoutRule.tz = 'Asia/Kolkata'
 shoutoutRule.hour = 23;
@@ -45,18 +45,27 @@ client.on("ready", () => {
 
   console.log("Bot is ready!");
 
-  schedule.scheduleJob('*/5 * * * * *', async() => {
+  schedule.scheduleJob('*/7 * * * * *', async() => {
 
     // console.log('ran cron job')
     // Send a dail-updaters shoutout
     dailyUpdaters =  [... new Set(dailyUpdaters)]
     console.log(dailyUpdaters)
-    if(dailyUpdaters){
+    if(dailyUpdaters.length > 0){
       console.log('test')
       client.channels.cache.get('1072021844758106195').send({ 
-      content: `Today's commiters ${dailyUpdaters}`
+        // content: `Today's commiters ${dailyUpdaters}`,
+        embeds: [
+                new EmbedBuilder()
+                    .setColor(0x0099FF)
+                    .setTitle("Today's Updaters")
+                    .setDescription(`${dailyUpdaters}`)
+                    // .setDescription(`<@!888691453096787980>`)
+                    .setAuthor({ name: 'Baburao', iconURL: 'https://pbs.twimg.com/profile_images/1251244594966040576/v-b1F6AM_400x400.jpg' })
+                    .setThumbnail('https://www.mirchiplay.com/wp-content/uploads/2020/06/akshay-kumar-scheme-pose.jpg')
+             ]     
       });
-    } else if(dailyUpdaters.length == 0){
+    } else{
       client.channels.cache.get('1072021844758106195').send({
         content: `No commits today :(`
       });
@@ -64,7 +73,7 @@ client.on("ready", () => {
 
     //emptying the database
     // mongoose.connection.db.dropCollection('updaters');
-    dailyUpdaters = [];
+    // dailyUpdaters = [];
   })
 });
 
@@ -117,7 +126,7 @@ client.on('messageCreate', async (msg)=>{
         }).save()
 
       //scheduled archive
-      schedule.scheduleJob('59 57 23 * * *', async () => {
+      schedule.scheduleJob(shoutoutRule, async () => {
         thread.setArchived(true);
       });
       
