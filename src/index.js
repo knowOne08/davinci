@@ -2,7 +2,7 @@
 const { Client, GatewayIntentBits, EmbedBuilder, MessageAttachment } = require("discord.js");
 const dotenv = require("dotenv");
 const schedule = require('node-schedule');
-let dailyUpdaters = ['immemor'];
+let dailyUpdaters = [];
 let shoutoutRule = new schedule.RecurrenceRule()
 shoutoutRule.tz = 'Asia/Kolkata'
 shoutoutRule.hour = 23;
@@ -26,10 +26,6 @@ const configuration = new Configuration({
   organisation: process.env['OPENAI_ORG'],
   apiKey: process.env.OPENAI_API,
 })
-// console.log(configuration)
-// console.log(process.env.OPENAI_API)
-// console.log(process.env.OPENAI_ORG)
-
 
 const openai = new OpenAIApi(configuration);
 
@@ -45,14 +41,14 @@ client.on("ready", () => {
 
   console.log("Bot is ready!");
 
-  schedule.scheduleJob('*/7 * * * * *', async() => {
+  schedule.scheduleJob(shoutoutRule, async() => {
 
-    // console.log('ran cron job')
-    // Send a dail-updaters shoutout
+
+    // Send a daily-updater shoutout
     dailyUpdaters =  [... new Set(dailyUpdaters)]
+    // dailyUpdaters = dailyUpdaters.map()
     console.log(dailyUpdaters)
     if(dailyUpdaters.length > 0){
-      console.log('test')
       client.channels.cache.get('1072021844758106195').send({ 
         // content: `Today's commiters ${dailyUpdaters}`,
         embeds: [
@@ -60,7 +56,6 @@ client.on("ready", () => {
                     .setColor(0x0099FF)
                     .setTitle("Today's Updaters")
                     .setDescription(`${dailyUpdaters}`)
-                    // .setDescription(`<@!888691453096787980>`)
                     .setAuthor({ name: 'Baburao', iconURL: 'https://pbs.twimg.com/profile_images/1251244594966040576/v-b1F6AM_400x400.jpg' })
                     .setThumbnail('https://www.mirchiplay.com/wp-content/uploads/2020/06/akshay-kumar-scheme-pose.jpg')
              ]     
@@ -72,8 +67,10 @@ client.on("ready", () => {
     }
 
     //emptying the database
-    // mongoose.connection.db.dropCollection('updaters');
-    // dailyUpdaters = [];
+    dailyUpdaters = [];
+    mongoose.connection.db.dropCollection('updaters');
+
+    
   })
 });
 
@@ -84,7 +81,7 @@ client.on('messageCreate', async (msg)=>{
 
     if(msg.content.startsWith("!chat ")){               //GPT
       let text = msg.content.split("!chat ")[1];
-      console.log(text)
+      // console.log(text)
       const gptResponse = await openai.createCompletion({
       model: "text-davinci-003",
       prompt: text,
@@ -92,7 +89,7 @@ client.on('messageCreate', async (msg)=>{
       temperature:0.5, 
       stop: ['ChatGPT:', 'achillies:', 'stopPlease:']
     })
-      // console.log(gptResponse);
+
     msg.reply(`${gptResponse.data.choices[0].text}`);
     return;
     }
@@ -114,7 +111,7 @@ client.on('messageCreate', async (msg)=>{
       //theAppreciator webhook url
       //https://discord.com/api/webhooks/1074013533576110170/C9tyxYO6j8PC6q-ImS6fVZNMO_fUedrS1UhPYuK-UtnrziIbY2BGg9BUcT8M7twggXES
       await webhook.send({
-        content: 'Damnn, You Work too hard !!',
+        content: 'Are Baas yaar kitna kaam karoge',
         threadId: threadId,
         files: ['https://i.pinimg.com/564x/7f/52/fb/7f52fb4660263684b4ffd130620736d2.jpg'],
       });
@@ -122,7 +119,6 @@ client.on('messageCreate', async (msg)=>{
         await new Updaters({
           uid: msg.author.id,
           name: msg.author.username
-
         }).save()
 
       //scheduled archive
@@ -133,14 +129,14 @@ client.on('messageCreate', async (msg)=>{
     }
 
       (await Updaters.find()).forEach((dailyUpdater)=>{
-        
-        // console.log(dailyUpdater.name);
-        dailyUpdaters.push(' ' + dailyUpdater.name);
+
+        dailyUpdaters.push('<@!' + dailyUpdater.uid + '>');
+        // console.log(dailyUpdater.uid)
       })
+      console.log(dailyUpdaters)
       
 
-    
-      // console.log(dailyUpdaters);
+
 
   } catch(err) {
     console.log(err) 

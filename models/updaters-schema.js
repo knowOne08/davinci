@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const updatersSchema = new mongoose.Schema({
     uid:{
-        type: Number,
+        type: String,
         required: true
     },
     name: {
