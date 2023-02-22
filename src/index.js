@@ -10,6 +10,7 @@ shoutoutRule.minute = 58;
 shoutoutRule.second = 0;
 const mongoose = require('mongoose');
 const Updaters = require('../models/updaters-schema')
+const Streakers = require('../models/streak-schema')
 // const axios = require("axios"); 
 dotenv.config();
 const keepAlive = require('./server')
@@ -41,7 +42,7 @@ client.on("ready", () => {
 
   console.log("Bot is ready!");
 
-  schedule.scheduleJob(shoutoutRule, async() => {
+  schedule.scheduleJob('*/6 * * * * *', async() => {
 
 
     // Send a daily-updater shoutout
@@ -67,8 +68,8 @@ client.on("ready", () => {
     }
 
     //emptying the database
-    dailyUpdaters = [];
-    mongoose.connection.db.dropCollection('updaters');
+    // dailyUpdaters = [];
+    // mongoose.connection.db.dropCollection('updaters');
 
     
   })
@@ -116,16 +117,28 @@ client.on('messageCreate', async (msg)=>{
         files: ['https://i.pinimg.com/564x/7f/52/fb/7f52fb4660263684b4ffd130620736d2.jpg'],
       });
 
-        await new Updaters({
-          uid: msg.author.id,
-          name: msg.author.username
-        }).save()
+      await new Updaters({
+        uid: msg.author.id,
+        name: msg.author.username
+      }).save()
 
       //scheduled archive
       schedule.scheduleJob(shoutoutRule, async () => {
         thread.setArchived(true);
       });
       
+      await Streakers.findOneAndUpdate({uid: msg.author.id}, {$inc: {"streakCount": 1} }, (err,docs)=>{
+        if(docs){
+          console.log('Already Exists')
+          // console.log(docs)
+        } else {
+            new Streakers({
+            uid: msg.author.id,
+            streakCount: 1
+            }).save()
+        }
+      }).clone()
+
     }
 
       (await Updaters.find()).forEach((dailyUpdater)=>{
@@ -133,7 +146,7 @@ client.on('messageCreate', async (msg)=>{
         dailyUpdaters.push('<@!' + dailyUpdater.uid + '>');
         // console.log(dailyUpdater.uid)
       })
-      console.log(dailyUpdaters)
+      // console.log(dailyUpdaters)
       
 
 
