@@ -2,6 +2,7 @@
 const { Client, GatewayIntentBits, EmbedBuilder, MessageAttachment } = require("discord.js");
 const dotenv = require("dotenv");
 const schedule = require('node-schedule');
+
 let dailyUpdaters = [];
 let shoutoutRule = new schedule.RecurrenceRule()
 shoutoutRule.tz = 'Asia/Kolkata'
@@ -48,7 +49,7 @@ client.on("ready", () => {
     // Send a daily-updater shoutout
     dailyUpdaters =  [... new Set(dailyUpdaters)]
     // dailyUpdaters = dailyUpdaters.map()
-    console.log(dailyUpdaters)
+    // console.log(dailyUpdaters)
     if(dailyUpdaters.length > 0){
       client.channels.cache.get('1072021844758106195').send({ 
         // content: `Today's commiters ${dailyUpdaters}`,
@@ -126,24 +127,28 @@ client.on('messageCreate', async (msg)=>{
       schedule.scheduleJob(shoutoutRule, async () => {
         thread.setArchived(true);
       });
-      
-      await Streakers.findOneAndUpdate({uid: msg.author.id}, {$inc: {"streakCount": 1} }, (err,docs)=>{
+
+
+      await Streakers.findOneAndUpdate({uid: msg.author.id}, {$inc: {streakCount: 1} }, (err,docs)=>{
         if(docs){
           console.log('Already Exists')
-          // console.log(docs)
+          console.log(docs)
         } else {
+          console.log("here")
             new Streakers({
             uid: msg.author.id,
-            streakCount: 1
+            streakCount: 1,
+            count: 1
             }).save()
-        }
-      }).clone()
+        } 
+      })
 
     }
 
-      (await Updaters.find()).forEach((dailyUpdater)=>{
 
-        dailyUpdaters.push('<@!' + dailyUpdater.uid + '>');
+      (await Updaters.find()).forEach((dailyUpdater)=>{
+        console.log("Here")
+        dailyUpdaters.push('<@!'+dailyUpdater.uid+'>');
         // console.log(dailyUpdater.uid)
       })
       // console.log(dailyUpdaters)
