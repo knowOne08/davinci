@@ -122,39 +122,77 @@ client.on('messageCreate', async (msg)=>{
       //   name: msg.author.username
       // }).save()
       
+      // await Updaters.findOneAndUpdate(
+      //   {uid: msg.author.id},
+      //   {
+      //     // streakCount: {
+      //     //         $cond: {
+      //     //               if: {done: {$eq: true}},
+      //     //               then: {$inc: {count: 1}},
+      //     //               else: {$set: {count: 0}}
+      //     //               }
+      //     //             },
+      //     // streakCount: {},
+      //     streakCount: {$set: {done: true}},
+      //     $inc: {noOfCommits: 1}
+      //   }
+      // ), (err,docs) => {
+      //   if(docs.length>0){
+      //     console.log("Already Exists")
+      //     console.log(docs)
+      //   } else {
+      //     console.log(err)
+      //     console.log("here")
+      //      new Updaters({
+      //       uid: msg.author.id,
+      //       name: msg.author.username,
+      //       // streakCount: {
+      //       //   count: 1,
+      //       //   done: true,
+      //       // },
+      //       streakCount: [{done: true}],
+      //       noOfCommits: 1
+      //     }).save()
+      //   }
+      // }
+
+      //trying it with promise (delete this)
       await Updaters.findOneAndUpdate(
-        {name: msg.author.username},
+        {uid: msg.author.id},
         {
-          // streakCount: {
+          // $set: {streakCount: {
           //         $cond: {
           //               if: {done: {$eq: true}},
           //               then: {$inc: {count: 1}},
           //               else: {$set: {count: 0}}
-          //               }
-          //             },
-          // streakCount: {},
-          // $set: {streakCount: true},
+          //           }
+          //         }
+          //       },
+          $cond: {
+            if: { $eq: ["streakCount.done", true]},
+            then: { $inc: {count: 1} },
+            else:  {$set: {count: 0}}
+          },
+          // $set: {"streakCount.done": true},
           $inc: {noOfCommits: 1}
         }
-      ), (err,docs) => {
-        if(docs.length){
-          console.log("Already Exists")
-          console.log(docs)
-        } else {
-          console.log(err)
-          console.log("here")
-           new Updaters({
+      ).then(()=> {
+        
+          console.log("herer")
+          new Updaters({
             uid: msg.author.id,
             name: msg.author.username,
             // streakCount: {
             //   count: 1,
             //   done: true,
             // },
-            // streakCount: true,
+            "streakCount.done": true,
+            "streakCount.count": 1,
             noOfCommits: 1
           }).save()
-        }
+        
       }
+      )
 
       //scheduled archive
       schedule.scheduleJob(shoutoutRule, async () => {
@@ -163,10 +201,9 @@ client.on('messageCreate', async (msg)=>{
 
     }
 
-
       (await Updaters.find()).forEach((dailyUpdater)=>{
-        console.log("Here")
-        dailyUpdaters.push('<@! '+dailyUpdater.uid+'>');
+    
+        dailyUpdaters.push('<@!'+dailyUpdater.uid+'>');
         // console.log(dailyUpdater.uid)
       })
       // console.log(dailyUpdaters)
