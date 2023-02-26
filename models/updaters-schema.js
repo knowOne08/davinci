@@ -8,7 +8,30 @@ const updatersSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true
+    },
+    // streakCount: {
+    //     count: {
+    //         type: Number,
+    //         required: true
+    //     },  
+    //     done: {
+    //         type: Boolean,
+    //         required: true
+    //     }
+    // },
+    
+    //remove this
+    // streakCount: {
+    //     type: Boolean,
+    //     required: true
+    // },
+
+    noOfCommits: {
+        type: Number,
+        required: true,
+        default: 0
     }
+
 })
 
 module.exports = mongoose.model('updaters', updatersSchema,'updaters')

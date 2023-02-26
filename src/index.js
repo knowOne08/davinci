@@ -11,7 +11,7 @@ shoutoutRule.minute = 58;
 shoutoutRule.second = 0;
 const mongoose = require('mongoose');
 const Updaters = require('../models/updaters-schema')
-const Streakers = require('../models/streak-schema')
+
 // const axios = require("axios"); 
 dotenv.config();
 const keepAlive = require('./server')
@@ -111,44 +111,62 @@ client.on('messageCreate', async (msg)=>{
       const webhook = webhooks.first();
 
       //theAppreciator webhook url
-      //https://discord.com/api/webhooks/1074013533576110170/C9tyxYO6j8PC6q-ImS6fVZNMO_fUedrS1UhPYuK-UtnrziIbY2BGg9BUcT8M7twggXES
       await webhook.send({
         content: 'Are Baas yaar kitna kaam karoge',
         threadId: threadId,
         files: ['https://i.pinimg.com/564x/7f/52/fb/7f52fb4660263684b4ffd130620736d2.jpg'],
       });
 
-      await new Updaters({
-        uid: msg.author.id,
-        name: msg.author.username
-      }).save()
+      // await new Updaters({
+      //   uid: msg.author.id,
+      //   name: msg.author.username
+      // }).save()
+      
+      await Updaters.findOneAndUpdate(
+        {name: msg.author.username},
+        {
+          // streakCount: {
+          //         $cond: {
+          //               if: {done: {$eq: true}},
+          //               then: {$inc: {count: 1}},
+          //               else: {$set: {count: 0}}
+          //               }
+          //             },
+          // streakCount: {},
+          // $set: {streakCount: true},
+          $inc: {noOfCommits: 1}
+        }
+      ), (err,docs) => {
+        if(docs.length){
+          console.log("Already Exists")
+          console.log(docs)
+        } else {
+          console.log(err)
+          console.log("here")
+           new Updaters({
+            uid: msg.author.id,
+            name: msg.author.username,
+            // streakCount: {
+            //   count: 1,
+            //   done: true,
+            // },
+            // streakCount: true,
+            noOfCommits: 1
+          }).save()
+        }
+      }
 
       //scheduled archive
       schedule.scheduleJob(shoutoutRule, async () => {
         thread.setArchived(true);
       });
 
-
-      await Streakers.findOneAndUpdate({uid: msg.author.id}, {$inc: {streakCount: 1} }, (err,docs)=>{
-        if(docs){
-          console.log('Already Exists')
-          console.log(docs)
-        } else {
-          console.log("here")
-            new Streakers({
-            uid: msg.author.id,
-            streakCount: 1,
-            count: 1
-            }).save()
-        } 
-      })
-
     }
 
 
       (await Updaters.find()).forEach((dailyUpdater)=>{
         console.log("Here")
-        dailyUpdaters.push('<@!'+dailyUpdater.uid+'>');
+        dailyUpdaters.push('<@! '+dailyUpdater.uid+'>');
         // console.log(dailyUpdater.uid)
       })
       // console.log(dailyUpdaters)
