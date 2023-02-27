@@ -168,20 +168,22 @@ client.on('messageCreate', async (msg)=>{
           //           }
           //         }
           //       },
-          $cond: {
-            if: { $eq: ["streakCount.done", true]},
-            then: { $inc: {count: 1} },
-            else:  {$set: {count: 0}}
-          },
+          // $cond: {
+          //   if: { $eq: ["streakCount.done", true]},
+          //   then: { $inc: {count: 1} },
+          //   else:  {$set: {count: 0}}
+          // },
           // $set: {"streakCount.done": true},
           $inc: {noOfCommits: 1}
         }
-      ).then(()=> {
-        
+      ), (err,docs) => {
+        if(docs.length>0){
+          console.log(docs)
+        } else {
           console.log("herer")
           new Updaters({
             uid: msg.author.id,
-            name: msg.author.username,
+            name: msg.author.username,  
             // streakCount: {
             //   count: 1,
             //   done: true,
@@ -190,9 +192,11 @@ client.on('messageCreate', async (msg)=>{
             "streakCount.count": 1,
             noOfCommits: 1
           }).save()
-        
-      }
-      )
+         }}
+        }
+       }
+      
+      
 
       //scheduled archive
       schedule.scheduleJob(shoutoutRule, async () => {
