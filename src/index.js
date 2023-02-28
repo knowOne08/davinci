@@ -117,51 +117,26 @@ client.on('messageCreate', async (msg)=>{
       //   files: ['https://i.pinimg.com/564x/7f/52/fb/7f52fb4660263684b4ffd130620736d2.jpg'],
       // });
 
-      // await new Updaters({
-      //   uid: msg.author.id,
-      //   name: msg.author.username
-      // }).save()
-      
-      // await Updaters.findOneAndUpdate(
-      //   {uid: msg.author.id},
-      //   {
-      //     // streakCount: {
-      //     //         $cond: {
-      //     //               if: {done: {$eq: true}},
-      //     //               then: {$inc: {count: 1}},
-      //     //               else: {$set: {count: 0}}
-      //     //               }
-      //     //             },
-      //     // streakCount: {},
-      //     streakCount: {$set: {done: true}},
-      //     $inc: {noOfCommits: 1}
-      //   }
-      // ), (err,docs) => {
-      //   if(docs.length>0){
-      //     console.log("Already Exists")
-      //     console.log(docs)
-      //   } else {
-      //     console.log(err)
-      //     console.log("here")
-      //      new Updaters({
-      //       uid: msg.author.id,
-      //       name: msg.author.username,
-      //       // streakCount: {
-      //       //   count: 1,
-      //       //   done: true,
-      //       // },
-      //       streakCount: [{done: true}],
-      //       noOfCommits: 1
-      //     }).save()
-      //   }
-      // })
+  
 
       //trying it with promise (delete this)
-
-      await Updaters.findOneAndUpdate(
+      await Updaters.updateOne(
         {uid: msg.author.id},
         {
-          $inc: {noOfCommits: 1}
+          $inc: {noOfCommits: 1},
+          // , "streakCount": {$cond: [ {$ne:["streakDone", true]}, 1, 5]}
+          // $set: {'streakCount.count': {
+          //   $inc: {}
+          // }}
+          $set: {streakCount: {$cond: [{"streakDone": {$ne: true}}, 1, 5]}},
+          $cond: [{$ne:["streakDone", true]}, {$inc: {"streakCount": 1}}, {$inc: {"streakCount": 5}}]
+          // "$set": { 
+          //     "$cond": {
+          //       if: {'streakCount.done': true},
+          //       then: {"$inc": {'streakCount.count': 1}},
+          //       else: {"$inc": {'streakCount.count': 5}}
+          //     }
+          // }
         }
         ).then(
           (doc) => {
@@ -169,11 +144,12 @@ client.on('messageCreate', async (msg)=>{
               // console.log(doc) //Document just before updation
               console.log("Done")
             } else {
-              console.log("Not found")
+              console.log("Made new user")
               new Updaters({
                 uid: msg.author.id,
                 name: msg.author.username,
-                streakCount: { done: true, count: true},
+                streakDone: true,
+                streakCount: 1,
                 noOfCommits: 1
               }).save()
             }
