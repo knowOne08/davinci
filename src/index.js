@@ -101,21 +101,21 @@ client.on('messageCreate', async (msg)=>{
     if(msg.content.match(cmtLnk) !== null){
       
       msg.react('🔥');
-      const thread = await msg.startThread({
-        name: `${msg.author.username}'s AppreciationThread`,
-        // autoArchiveDuration: 60, 
-      });
+      // const thread = await msg.startThread({
+      //   name: `${msg.author.username}'s AppreciationThread`,
+      //   // autoArchiveDuration: 60, 
+      // });
 
-      const threadId = thread.id;
-      const webhooks = await msg.channel.fetchWebhooks('1074013533576110170', 'C9tyxYO6j8PC6q-ImS6fVZNMO_fUedrS1UhPYuK-UtnrziIbY2BGg9BUcT8M7twggXES');
-      const webhook = webhooks.first();
+      // const threadId = thread.id;
+      // const webhooks = await msg.channel.fetchWebhooks('1074013533576110170', 'C9tyxYO6j8PC6q-ImS6fVZNMO_fUedrS1UhPYuK-UtnrziIbY2BGg9BUcT8M7twggXES');
+      // const webhook = webhooks.first();
 
-      //theAppreciator webhook url
-      await webhook.send({
-        content: 'Are Baas yaar kitna kaam karoge',
-        threadId: threadId,
-        files: ['https://i.pinimg.com/564x/7f/52/fb/7f52fb4660263684b4ffd130620736d2.jpg'],
-      });
+      // //theAppreciator webhook url
+      // await webhook.send({
+      //   content: 'Are Baas yaar kitna kaam karoge',
+      //   threadId: threadId,
+      //   files: ['https://i.pinimg.com/564x/7f/52/fb/7f52fb4660263684b4ffd130620736d2.jpg'],
+      // });
 
       // await new Updaters({
       //   uid: msg.author.id,
@@ -154,48 +154,31 @@ client.on('messageCreate', async (msg)=>{
       //       noOfCommits: 1
       //     }).save()
       //   }
-      // }
+      // })
 
       //trying it with promise (delete this)
+
       await Updaters.findOneAndUpdate(
         {uid: msg.author.id},
         {
-          // $set: {streakCount: {
-          //         $cond: {
-          //               if: {done: {$eq: true}},
-          //               then: {$inc: {count: 1}},
-          //               else: {$set: {count: 0}}
-          //           }
-          //         }
-          //       },
-          // $cond: {
-          //   if: { $eq: ["streakCount.done", true]},
-          //   then: { $inc: {count: 1} },
-          //   else:  {$set: {count: 0}}
-          // },
-          // $set: {"streakCount.done": true},
           $inc: {noOfCommits: 1}
         }
-      ), (err,docs) => {
-        if(docs.length>0){
-          console.log(docs)
-        } else {
-          console.log("herer")
-          new Updaters({
-            uid: msg.author.id,
-            name: msg.author.username,  
-            // streakCount: {
-            //   count: 1,
-            //   done: true,
-            // },
-            "streakCount.done": true,
-            "streakCount.count": 1,
-            noOfCommits: 1
-          }).save()
-         }}
-        }
-       }
-      
+        ).then(
+          (doc) => {
+            if(doc){
+              // console.log(doc) //Document just before updation
+              console.log("Done")
+            } else {
+              console.log("Not found")
+              new Updaters({
+                uid: msg.author.id,
+                name: msg.author.username,
+                streakCount: { done: true, count: true},
+                noOfCommits: 1
+              }).save()
+            }
+          }
+        )
       
 
       //scheduled archive
