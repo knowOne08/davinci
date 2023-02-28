@@ -1,2 +1,1 @@
 ﻿# chatGPTbot
-test
