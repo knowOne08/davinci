@@ -119,26 +119,24 @@ client.on('messageCreate', async (msg)=>{
 
   
 
-      //trying it with promise (delete this)
-      await Updaters.updateOne(
+      
+       Updaters.updateOne(
         {uid: msg.author.id},
         {
-          $inc: {noOfCommits: 1},
-          // , "streakCount": {$cond: [ {$ne:["streakDone", true]}, 1, 5]}
-          // $set: {'streakCount.count': {
-          //   $inc: {}
-          // }}
-          $set: {streakCount: {$cond: [{"streakDone": {$ne: true}}, 1, 5]}},
-          $cond: [{$ne:["streakDone", true]}, {$inc: {"streakCount": 1}}, {$inc: {"streakCount": 5}}]
-          // "$set": { 
-          //     "$cond": {
-          //       if: {'streakCount.done': true},
-          //       then: {"$inc": {'streakCount.count': 1}},
-          //       else: {"$inc": {'streakCount.count': 5}}
-          //     }
-          // }
+          // $inc: {noOfCommits: 1},
+          // $inc: {streakCount: {$cond:[{$eq:['streakDone',true]},1,5]}},
+          // $cond: [true, {$inc: {streakCount:1}}, {$inc: {streakCount:5}}]
+         "$inc": {
+            streakCount: {
+              $cond: {
+                if: {$eq: ['streakDone', true]},
+                then: 1,
+                else: 5
+              }
+            }
+          }
         }
-        ).then(
+        ).then (
           (doc) => {
             if(doc){
               // console.log(doc) //Document just before updation
