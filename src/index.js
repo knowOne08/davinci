@@ -120,37 +120,44 @@ client.on('messageCreate', async (msg)=>{
   
 
       
-       Updaters.updateOne(
+       await Updaters.findOneAndUpdate(
         {uid: msg.author.id},
-        {
-          // $inc: {noOfCommits: 1},
-          // $inc: {streakCount: {$cond:[{$eq:['streakDone',true]},1,5]}},
-          // $cond: [true, {$inc: {streakCount:1}}, {$inc: {streakCount:5}}]
-         "$inc": {
-            streakCount: {
-              $cond: {
-                if: {$eq: ['streakDone', true]},
-                then: 1,
-                else: 5
+      [{
+        // $inc: {noOfCommits: 1},
+        $set: {
+          dates: {
+            $cond:[
+              {$ne: [new Date().getDate(), {$first: "$dates"}]},
+              {$concatArrays:  ['$dates', [new Date().getDate()]]}, 
+              {
+                $cond: [
+                  {$eq: [new Date().getDate() - 1, {$first: "$dates"}]},
+                  {$concatArrays:  [[new Date().getDate()],'$dates']},
+                  [new Date().getDate()]
+                ]
               }
-            }
-          }
+            ]}
         }
+      }]
         ).then (
           (doc) => {
             if(doc){
-              // console.log(doc) //Document just before updation
+              console.log(doc) //Document just before updation
               console.log("Done")
+
+
             } else {
-              console.log("Made new user")
+              // console.log(doc)
+             
               new Updaters({
                 uid: msg.author.id,
                 name: msg.author.username,
-                streakDone: true,
-                streakCount: 1,
-                noOfCommits: 1
+                dates: [new Date().getDate()],
+                noOfCommits: 1,
               }).save()
-            }
+              console.log(doc)
+              console.log("Made new user")
+            } 
           }
         )
       

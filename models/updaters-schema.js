@@ -21,21 +21,23 @@ const updatersSchema = new mongoose.Schema({
     // },
     
     // remove this
-    streakDone:{
-        type: Boolean,
-        required: true
-    },
-    streakCount: {
-        type: Number,
-        required: true
-    },
+    // streakDone:{
+    //     type: Boolean,
+    //     required: true
+    // },
+    // streakCount: {
+    //     type: Number,
+    //     required: true
+    // },
 
+    dates:{
+        type: Array,
+        required: true
+    },
     noOfCommits: {
         type: Number,
-        required: true,
-        default: 0
+        required: true
     }
-
 })
 
 module.exports = mongoose.model('updaters', updatersSchema,'updaters')
