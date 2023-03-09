@@ -123,7 +123,6 @@ client.on('messageCreate', async (msg)=>{
        await Updaters.findOneAndUpdate(
         {uid: msg.author.id},
       [{
-        // $inc: {noOfCommits: 1},
         $set: {
           dates: {
             $cond:[
