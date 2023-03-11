@@ -1,5 +1,4 @@
-//for a connection with discord
-const { Client, GatewayIntentBits, EmbedBuilder, MessageAttachment } = require("discord.js");
+const { Client, GatewayIntentBits, EmbedBuilder } = require("discord.js");
 const dotenv = require("dotenv");
 const schedule = require('node-schedule');
 
@@ -32,8 +31,6 @@ const configuration = new Configuration({
 const openai = new OpenAIApi(configuration);
 
 
-// const client = new Discord.Client({ intents: ["GUILDS", "GUILD_MESSAGES"] });
-
 //bot redy test
 client.on("ready", () => {
   let uri = 'mongodb+srv://davinci:'+process.env.MONGO_PASS+'@cluster0.zux3pbq.mongodb.net/?retryWrites=true&w=majority'
@@ -43,16 +40,14 @@ client.on("ready", () => {
 
   console.log("Bot is ready!");
 
-  schedule.scheduleJob('*/6 * * * * *', async() => {
+  schedule.scheduleJob(shoutoutRule, async() => {
 
 
     // Send a daily-updater shoutout
-    dailyUpdaters =  [... new Set(dailyUpdaters)]
-    // dailyUpdaters = dailyUpdaters.map()
-    // console.log(dailyUpdaters)
+    dailyUpdaters =  [... new Set(dailyUpdaters)];
+
     if(dailyUpdaters.length > 0){
       client.channels.cache.get('1072021844758106195').send({ 
-        // content: `Today's commiters ${dailyUpdaters}`,
         embeds: [
                 new EmbedBuilder()
                     .setColor(0x0099FF)
@@ -62,17 +57,13 @@ client.on("ready", () => {
                     .setThumbnail('https://www.mirchiplay.com/wp-content/uploads/2020/06/akshay-kumar-scheme-pose.jpg')
              ]     
       });
-    } else{
+    } else {
       client.channels.cache.get('1072021844758106195').send({
         content: `No commits today :(`
       });
     }
 
-    //emptying the database
-    // dailyUpdaters = [];
-    // mongoose.connection.db.dropCollection('updaters');
-
-    
+    dailyUpdaters = [];    
   })
 });
 
@@ -101,21 +92,20 @@ client.on('messageCreate', async (msg)=>{
     if(msg.content.match(cmtLnk) !== null){
       
       msg.react('🔥');
-      // const thread = await msg.startThread({
-      //   name: `${msg.author.username}'s AppreciationThread`,
-      //   // autoArchiveDuration: 60, 
-      // });
+      const thread = await msg.startThread({
+        name: `${msg.author.username}'s AppreciationThread`,
+        // autoArchiveDuration: 60, 
+      });
 
-      // const threadId = thread.id;
-      // const webhooks = await msg.channel.fetchWebhooks('1074013533576110170', 'C9tyxYO6j8PC6q-ImS6fVZNMO_fUedrS1UhPYuK-UtnrziIbY2BGg9BUcT8M7twggXES');
-      // const webhook = webhooks.first();
+      const threadId = thread.id;
+      const webhooks = await msg.channel.fetchWebhooks('1074013533576110170', 'C9tyxYO6j8PC6q-ImS6fVZNMO_fUedrS1UhPYuK-UtnrziIbY2BGg9BUcT8M7twggXES');
+      const webhook = webhooks.first();
 
-      // //theAppreciator webhook url
-      // await webhook.send({
-      //   content: 'Are Baas yaar kitna kaam karoge',
-      //   threadId: threadId,
-      //   files: ['https://i.pinimg.com/564x/7f/52/fb/7f52fb4660263684b4ffd130620736d2.jpg'],
-      // });
+      await webhook.send({
+        content: 'Are Baas yaar kitna kaam karoge',
+        threadId: threadId,
+        files: ['https://i.pinimg.com/564x/7f/52/fb/7f52fb4660263684b4ffd130620736d2.jpg'],
+      });
 
   
 
@@ -126,8 +116,8 @@ client.on('messageCreate', async (msg)=>{
         $set: {
           dates: {
             $cond:[
-              {$ne: [new Date().getDate(), {$first: "$dates"}]},
-              {$concatArrays:  ['$dates', [new Date().getDate()]]}, 
+              {$eq: [new Date().getDate(), {$first: "$dates"}]},
+              "$dates", 
               {
                 $cond: [
                   {$eq: [new Date().getDate() - 1, {$first: "$dates"}]},
@@ -136,25 +126,30 @@ client.on('messageCreate', async (msg)=>{
                 ]
               }
             ]}
+        },
+        $set: {
+          "streakCount":{
+            $size: "$dates"
+          } 
         }
       }]
         ).then (
           (doc) => {
             if(doc){
-              console.log(doc) //Document just before updation
+              // console.log(doc) //Document just before updation
               console.log("Done")
 
 
             } else {
-              // console.log(doc)
              
               new Updaters({
                 uid: msg.author.id,
                 name: msg.author.username,
                 dates: [new Date().getDate()],
+                streakCount: 1,
                 noOfCommits: 1,
               }).save()
-              console.log(doc)
+              // console.log(doc)
               console.log("Made new user")
             } 
           }
@@ -170,10 +165,10 @@ client.on('messageCreate', async (msg)=>{
 
       (await Updaters.find()).forEach((dailyUpdater)=>{
     
-        dailyUpdaters.push('<@!'+dailyUpdater.uid+'>');
-        // console.log(dailyUpdater.uid)
+        dailyUpdaters.push('<@!'+dailyUpdater.uid+'>\n' + 'Streak Count: ' + dailyUpdater.streakCount + '\n');
+
       })
-      // console.log(dailyUpdaters)
+
       
 
 
