@@ -14,7 +14,7 @@
   "main": "./src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node ."
+    "start": "node ./index.js"
   },
   "keywords": [],
   "author": "knowOneo08",

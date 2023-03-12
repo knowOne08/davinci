@@ -9,30 +9,13 @@ const updatersSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    // streakCount: {
-    //     count: {
-    //         type: Number,
-    //         required: true
-    //     },  
-    //     done: {
-    //         type: Boolean,
-    //         required: true
-    //     }
-    // },
-    
-    // remove this
-    // streakDone:{
-    //     type: Boolean,
-    //     required: true
-    // },
-    // streakCount: {
-    //     type: Number,
-    //     required: true
-    // },
-
     dates:{
         type: Array,
         required: true
+    },
+    streakCount:{
+        type: Number,
+        // required: true
     },
     noOfCommits: {
         type: Number,

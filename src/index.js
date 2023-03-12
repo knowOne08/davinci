@@ -40,7 +40,7 @@ client.on("ready", () => {
 
   console.log("Bot is ready!");
 
-  schedule.scheduleJob(shoutoutRule, async() => {
+  schedule.scheduleJob('*/7 * * * * *', async() => {
 
 
     // Send a daily-updater shoutout
@@ -92,20 +92,20 @@ client.on('messageCreate', async (msg)=>{
     if(msg.content.match(cmtLnk) !== null){
       
       msg.react('🔥');
-      const thread = await msg.startThread({
-        name: `${msg.author.username}'s AppreciationThread`,
-        // autoArchiveDuration: 60, 
-      });
+      // const thread = await msg.startThread({
+      //   name: `${msg.author.username}'s AppreciationThread`,
+      //   // autoArchiveDuration: 60, 
+      // });
 
-      const threadId = thread.id;
-      const webhooks = await msg.channel.fetchWebhooks('1074013533576110170', 'C9tyxYO6j8PC6q-ImS6fVZNMO_fUedrS1UhPYuK-UtnrziIbY2BGg9BUcT8M7twggXES');
-      const webhook = webhooks.first();
+      // const threadId = thread.id;
+      // const webhooks = await msg.channel.fetchWebhooks('1074013533576110170', 'C9tyxYO6j8PC6q-ImS6fVZNMO_fUedrS1UhPYuK-UtnrziIbY2BGg9BUcT8M7twggXES');
+      // const webhook = webhooks.first();
 
-      await webhook.send({
-        content: 'Are Baas yaar kitna kaam karoge',
-        threadId: threadId,
-        files: ['https://i.pinimg.com/564x/7f/52/fb/7f52fb4660263684b4ffd130620736d2.jpg'],
-      });
+      // await webhook.send({
+      //   content: 'Are Baas yaar kitna kaam karoge',
+      //   threadId: threadId,
+      //   files: ['https://i.pinimg.com/564x/7f/52/fb/7f52fb4660263684b4ffd130620736d2.jpg'],
+      // });
 
   
 
@@ -131,12 +131,12 @@ client.on('messageCreate', async (msg)=>{
           "streakCount":{
             $size: "$dates"
           } 
-        }
+        } 
       }]
         ).then (
           (doc) => {
             if(doc){
-              // console.log(doc) //Document just before updation
+              console.log(doc) //Document just before updation
               console.log("Done")
 
 
@@ -149,7 +149,7 @@ client.on('messageCreate', async (msg)=>{
                 streakCount: 1,
                 noOfCommits: 1,
               }).save()
-              // console.log(doc)
+              console.log(doc)
               console.log("Made new user")
             } 
           }
