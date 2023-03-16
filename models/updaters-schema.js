@@ -13,10 +13,6 @@ const updatersSchema = new mongoose.Schema({
         type: Array,
         required: true
     },
-    streakCount:{
-        type: Number,
-        // required: true
-    },
     noOfCommits: {
         type: Number,
         required: true
