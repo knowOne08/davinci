@@ -43,7 +43,7 @@ client.on("ready", () => {
 
   console.log("Bot is ready!");
 
-  schedule.scheduleJob('*/7 * * * * *', async () => {
+  schedule.scheduleJob(shoutoutRule, async () => {
     
     //setting the temporary array to dailyUpdaters
     (await Updaters.find()).forEach((dailyUpdater) => {
