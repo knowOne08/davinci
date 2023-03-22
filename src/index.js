@@ -43,10 +43,21 @@ client.on("ready", () => {
 
   console.log("Bot is ready!");
 
-  schedule.scheduleJob(shoutoutRule, async () => {
+  schedule.scheduleJob('*/7 * * * * *', async () => {
+    
+    //setting the temporary array to dailyUpdaters
+    (await Updaters.find()).forEach((dailyUpdater) => {
+      dailyUpdaters.push(
+        "<@!" +
+          dailyUpdater.uid +
+          ">\n" +
+          "Streak Count: " +
+          dailyUpdater.dates.length +
+          "\n"
+      );
+    });
+    // dailyUpdaters = [...new Set(dailyUpdaters)];
     // Send a daily-updater shoutout
-    dailyUpdaters = [...new Set(dailyUpdaters)];
-
     if (dailyUpdaters.length > 0) {
       client.channels.cache.get("1072021844758106195").send({
         embeds: [
@@ -158,16 +169,6 @@ client.on("messageCreate", async (msg) => {
       });
     }
 
-    (await Updaters.find()).forEach((dailyUpdater) => {
-      dailyUpdaters.push(
-        "<@!" +
-          dailyUpdater.uid +
-          ">\n" +
-          "Streak Count: " +
-          dailyUpdater.dates.length +
-          "\n"
-      );
-    });
   } catch (err) {
     console.log(err);
   }
