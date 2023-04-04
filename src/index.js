@@ -11,6 +11,8 @@ shoutoutRule.second = 0;
 const mongoose = require("mongoose");
 const Updaters = require("../models/updaters-schema");
 
+let chatState = '';
+
 // const axios = require("axios");
 dotenv.config();
 const keepAlive = require("./server");
@@ -59,7 +61,7 @@ client.on("ready", () => {
     // dailyUpdaters = [...new Set(dailyUpdaters)];
     // Send a daily-updater shoutout
     if (dailyUpdaters.length > 0) {
-      client.channels.cache.get("1072021844758106195").send({
+      client.channels.cache.get("1092854457760497794").send({
         embeds: [
           new EmbedBuilder()
             .setColor(0x0099ff)
@@ -76,7 +78,7 @@ client.on("ready", () => {
         ],
       });
     } else {
-      client.channels.cache.get("1072021844758106195").send({
+      client.channels.cache.get("1092854457760497794").send({
         content: `No commits today :(`,
       });
     }
@@ -94,14 +96,17 @@ client.on("messageCreate", async (msg) => {
       let text = msg.content.split("!chat ")[1];
       // console.log(text)
       const gptResponse = await openai.createCompletion({
+        // model: "text-davinci-003",
         model: "text-davinci-003",
         prompt: text,
         max_tokens: 512,
         temperature: 0.5,
         stop: ["ChatGPT:", "achillies:", "stopPlease:"],
+        
       });
 
       msg.reply(`${gptResponse.data.choices[0].text}`);
+      // chatState = gptResponse.choices[0].context;  
       return;
     }
 
@@ -116,9 +121,10 @@ client.on("messageCreate", async (msg) => {
 
       const threadId = thread.id;
       const webhooks = await msg.channel.fetchWebhooks(
-        "1074013533576110170",
-        "C9tyxYO6j8PC6q-ImS6fVZNMO_fUedrS1UhPYuK-UtnrziIbY2BGg9BUcT8M7twggXES"
+        "1092854760136245289",
+        "HlAT6CkbSIZFT1COaAbkJOWyq_IXrBpneCew68NaPnrxxDjurc8GqDVTpDNFzNM0L9TB"
       );
+    
       const webhook = webhooks.first();
 
       await webhook.send({
