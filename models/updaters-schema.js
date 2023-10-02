@@ -1,4 +1,5 @@
-const mongoose = require('mongoose');
+// const mongoose = require('mongoose');
+import mongoose from "mongoose"
 
 const updatersSchema = new mongoose.Schema({
     uid:{
@@ -19,4 +20,8 @@ const updatersSchema = new mongoose.Schema({
     }
 })
 
-module.exports = mongoose.model('updaters', updatersSchema,'updaters')
+// module.exports = mongoose.model('updaters', updatersSchema,'updaters')
+const Updaters = mongoose.model('updaters', updatersSchema,'updaters');
+
+
+export default Updaters;

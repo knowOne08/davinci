@@ -1,0 +1,9 @@
+{
+    "watch": ["src"], 
+    "ext": "js json",   
+    "exec": "node -r dotenv/config src/index.js", 
+    "env": {
+      "NODE_ENV": "development" 
+    },
+    "ignore": ["node_modules"] 
+  }

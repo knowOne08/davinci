@@ -1,21 +1,29 @@
-const { Client, GatewayIntentBits, EmbedBuilder } = require("discord.js");
-const dotenv = require("dotenv");
-const schedule = require("node-schedule");
 
+import dotenv from "dotenv";
+dotenv.config({ path: 'src/.env' });
+/* setting up __dirname for ES6 module */
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+import { Client, GatewayIntentBits, EmbedBuilder, Events, Collection } from "discord.js";
+import schedule from "node-schedule";
+import { Configuration, OpenAIApi } from "openai";
+import { keepAlive } from "./server.js"
+import mongoose from "mongoose";
+import Updaters from "./../models/updaters-schema.js"
 let dailyUpdaters = [];
 let shoutoutRule = new schedule.RecurrenceRule();
 shoutoutRule.tz = "Asia/Kolkata";
 shoutoutRule.hour = 23;
 shoutoutRule.minute = 58;
 shoutoutRule.second = 0;
-const mongoose = require("mongoose");
-const Updaters = require("../models/updaters-schema");
 
 let chatState = '';
 
-// const axios = require("axios");
-dotenv.config();
-const keepAlive = require("./server");
+
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -23,9 +31,59 @@ const client = new Client({
     GatewayIntentBits.MessageContent,
   ],
 });
+/* --- Command Handling --- */
+client.commands = new Collection()
 
-//for a connection with openai api
-const { Configuration, OpenAIApi } = require("openai");
+const foldersPath = path.join(__dirname, 'commands');
+const commandFolders = fs.readdirSync(foldersPath);
+
+for (const folder of commandFolders) {
+  const commandsPath = path.join(foldersPath, folder);
+  const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+  for (const file of commandFiles) {
+
+    const filePath = path.join(commandsPath, file);
+    import(filePath)
+      .then((module) => {
+        const command = module.default || module;
+
+        // Check if the imported module has 'data' and 'execute' properties
+        if ('data' in command && 'execute' in command) {
+          client.commands.set(command.data.name, command);
+        } else {
+          console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
+        }
+      })
+      .catch((error) => {
+        console.error(`Error importing ${filePath}: ${error}`);
+      });
+  }
+}
+
+client.on(Events.InteractionCreate, async interaction => {
+  if (!interaction.isChatInputCommand()) return;
+  // console.log(interaction);
+
+  const command = interaction.client.commands.get(interaction.commandName)
+
+  if (!command) {
+    console.error(`No command matching ${interaction.commandName} was found.`);
+    return;
+  }
+
+  try {
+    await command.execute(interaction);
+  } catch (error) {
+    console.log(error);
+    if (interaction.replied || interaction.deferred) {
+      await interaction.followUp({ content: 'There was an error while executing this command!', ephemeral: true });
+    } else {
+      await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+    }
+  }
+});
+
+//--- For a connection with openai api ----
 const configuration = new Configuration({
   organisation: process.env["OPENAI_ORG"],
   apiKey: process.env.OPENAI_API,
@@ -46,16 +104,16 @@ client.on("ready", () => {
   console.log("Bot is ready!");
 
   schedule.scheduleJob(shoutoutRule, async () => {
-    
+
     //setting the temporary array to dailyUpdaters
     (await Updaters.find()).forEach((dailyUpdater) => {
       dailyUpdaters.push(
         "<@!" +
-          dailyUpdater.uid +
-          ">\n" +
-          "Streak Count: " +
-          dailyUpdater.dates.length +
-          "\n"
+        dailyUpdater.uid +
+        ">\n" +
+        "Streak Count: " +
+        dailyUpdater.dates.length +
+        "\n"
       );
     });
     // dailyUpdaters = [...new Set(dailyUpdaters)];
@@ -85,30 +143,16 @@ client.on("ready", () => {
 
     dailyUpdaters = [];
   });
+
+
 });
 
 client.on("messageCreate", async (msg) => {
   try {
     if (msg.author.bot) return; //bot dont get in loop
+    else msg.reply(await getGPTresponse(msg))
 
-    if (msg.content.startsWith("!chat ")) {
-      //GPT
-      let text = msg.content.split("!chat ")[1];
-      // console.log(text)
-      const gptResponse = await openai.createCompletion({
-        // model: "text-davinci-003",
-        model: "text-davinci-003",
-        prompt: text,
-        max_tokens: 512,
-        temperature: 0.5,
-        stop: ["ChatGPT:", "achillies:", "stopPlease:"],
-        
-      });
 
-      msg.reply(`${gptResponse.data.choices[0].text}`);
-      // chatState = gptResponse.choices[0].context;  
-      return;
-    }
 
     let cmtLnk = /https:\/\/github\.com\/.*\/.*\/commit\/[0-9a-f]{40}/;
 
@@ -124,7 +168,7 @@ client.on("messageCreate", async (msg) => {
         "1092854760136245289",
         "HlAT6CkbSIZFT1COaAbkJOWyq_IXrBpneCew68NaPnrxxDjurc8GqDVTpDNFzNM0L9TB"
       );
-    
+
       const webhook = webhooks.first();
 
       await webhook.send({
@@ -179,6 +223,26 @@ client.on("messageCreate", async (msg) => {
     console.log(err);
   }
 });
+
+export const getGPTresponse = async (msg) => {
+  if (msg.content.startsWith("!chat ")) {
+    //GPT
+    let text = msg.content.split("!chat ")[1];
+    // console.log(text)
+    const gptResponse = await openai.createCompletion({
+      // model: "text-davinci-003",
+      model: "text-davinci-003",
+      prompt: text,
+      max_tokens: 512,
+      temperature: 0.5,
+      stop: ["ChatGPT:", "achillies:", "stopPlease:"],
+
+    });
+    // console.log(typeof(gptResponse.data.choices[0].text))
+    return `${gptResponse.data.choices[0].text}`
+
+  }
+}
 
 keepAlive();
 client.login(process.env.TOKEN);
