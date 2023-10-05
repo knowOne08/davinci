@@ -10,7 +10,7 @@ const __dirname = path.dirname(__filename);
 
 import { Client, GatewayIntentBits, EmbedBuilder, Events, Collection } from "discord.js";
 import schedule from "node-schedule";
-import { Configuration, OpenAIApi } from "openai";
+// import { Configuration, OpenAIApi } from "openai";
 import { keepAlive } from "./server.js"
 import mongoose from "mongoose";
 import Updaters from "./../models/updaters-schema.js"
@@ -83,13 +83,13 @@ client.on(Events.InteractionCreate, async interaction => {
   }
 });
 
-//--- For a connection with openai api ----
-const configuration = new Configuration({
-  organisation: process.env["OPENAI_ORG"],
-  apiKey: process.env.OPENAI_API,
-});
+// //--- For a connection with openai api ----
+// const configuration = new Configuration({
+//   organisation: process.env["OPENAI_ORG"],
+//   apiKey: process.env.OPENAI_API,
+// });
 
-const openai = new OpenAIApi(configuration);
+// const openai = new OpenAIApi(configuration);
 
 //bot redy test
 client.on("ready", () => {
@@ -150,7 +150,6 @@ client.on("ready", () => {
 client.on("messageCreate", async (msg) => {
   try {
     if (msg.author.bot) return; //bot dont get in loop
-    else msg.reply(await getGPTresponse(msg))
 
 
 
@@ -223,26 +222,6 @@ client.on("messageCreate", async (msg) => {
     console.log(err);
   }
 });
-
-export const getGPTresponse = async (msg) => {
-  if (msg.content.startsWith("!chat ")) {
-    //GPT
-    let text = msg.content.split("!chat ")[1];
-    // console.log(text)
-    const gptResponse = await openai.createCompletion({
-      // model: "text-davinci-003",
-      model: "text-davinci-003",
-      prompt: text,
-      max_tokens: 512,
-      temperature: 0.5,
-      stop: ["ChatGPT:", "achillies:", "stopPlease:"],
-
-    });
-    // console.log(typeof(gptResponse.data.choices[0].text))
-    return `${gptResponse.data.choices[0].text}`
-
-  }
-}
 
 keepAlive();
 client.login(process.env.TOKEN);

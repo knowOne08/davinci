@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-dotenv.config({ path: './.env' });
+dotenv.config({ path: 'src/.env' });
 import {REST, Routes} from "discord.js"
 
 /* setting up __dirname for ES6 module */
@@ -34,7 +34,7 @@ for (const folder of commandFolders) {
                 console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
             }
 
-        
+            // console.log(process.env.TOKEN)
             const rest = new REST().setToken(process.env.TOKEN);
             (async () => {
                 try {

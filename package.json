@@ -16,8 +16,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node src/index.js",
-    "dev": "nodemon -r dotenv/config ./src/index.js",
-    "deploy-commands": "node deploy-commands.js"
+    "dev": "nodemon -r dotenv/config ./src/index.js ",
+    "deploy-commands": "node src/deploy-commands.js"
   },
   "keywords": [],
   "author": "knowOneo08",
