@@ -31,9 +31,9 @@ const chat = {
         // await interaction.reply("Test")
         // console.log(interaction);
         const prompt = await interaction.options.getString('prompt');
-        console.log(prompt);
+        // console.log(interaction.user);
         await interaction.deferReply();
-        await interaction.editReply(await getGPTresponse(prompt)) ?? "Didn't work (Default)";
+        await interaction.editReply(`***Prompt*** by <@!${interaction.user.id}> \n${prompt} \n\n` + "**Response**" + await getGPTresponse(prompt)) ?? "Didn't work (Default)";
     } 
 }
 
